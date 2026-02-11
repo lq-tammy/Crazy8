@@ -1,0 +1,5 @@
+{
+  "name": "Crazy Eights - 疯狂 8 点",
+  "description": "A high-performance, responsive React-based card game. Play against a smart AI in this classic 52-card game where 8s are wild. Features smooth animations and a modern UI.",
+  "requestFramePermissions": []
+}
