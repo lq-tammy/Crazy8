@@ -14,7 +14,7 @@ const WINNING_QUOTES = [
   "看来你的运气比去菜市场买菜中奖还要好那么一点点。",
   "你可以去拉斯维加斯出道了，这里的 AI 已经拦不住你了。",
   "AI 刚才悄悄给我发消息说：‘这人是不是开挂了？’",
-  "优雅，实在是太优雅了！你完美诠释了什么是‘疯狂 8 点’。",
+  "优雅，实在是太优雅了！你完美诠释了什么是‘Crazy8’。",
   "恭喜！你已击败全国 99% 的碳基生物打牌选手。"
 ];
 
@@ -29,7 +29,7 @@ const App: React.FC = () => {
   const [winningQuote, setWinningQuote] = useState<string>("");
   const [isSuitSelectorOpen, setIsSuitSelectorOpen] = useState(false);
   const [pendingEightCard, setPendingEightCard] = useState<CardType | null>(null);
-  const [logs, setLogs] = useState<string[]>(['欢迎来到疯狂 8 点！']);
+  const [logs, setLogs] = useState<string[]>(['欢迎来到 Crazy8！']);
 
   const playWinSound = () => {
     try {
@@ -190,7 +190,7 @@ const App: React.FC = () => {
     <div className="h-screen w-full flex flex-col bg-emerald-900 text-white overflow-hidden select-none">
       <header className="p-4 flex justify-between items-center bg-emerald-950/50 backdrop-blur-md border-b border-white/10 shrink-0">
         <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">
-          CRAZY EIGHTS <span className="text-sm font-normal text-white/60 ml-2 italic">疯狂 8 点</span>
+          CRAZY8 <span className="text-sm font-normal text-white/60 ml-2 italic">疯狂 8 点</span>
         </h1>
         <div className="flex items-center gap-4">
           <div className="bg-white/10 px-4 py-1 rounded-full text-xs font-mono">
