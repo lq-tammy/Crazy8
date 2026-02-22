@@ -1,5 +1,5 @@
 {
-  "name": "Crazy8",
-  "description": "A high-performance, responsive React-based card game. Play against a smart AI in this classic 52-card game where 8s are wild. Features smooth animations and a modern UI.",
+  "name": "小鸢乐园之疯狂8点 (Yuan's Playground Crazy Eight)",
+  "description": "小鸢乐园之疯狂8点是一款充满乐趣的扑克牌游戏。支持中英西三语切换，拥有精美的牌桌界面和智能AI对手。8点是万能牌，快来挑战吧！",
   "requestFramePermissions": []
 }

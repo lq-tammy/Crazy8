@@ -31,8 +31,15 @@ export interface CardType {
 export type PlayerType = 'player' | 'ai';
 
 export enum GameState {
+  HOME = 'HOME',
   IDLE = 'IDLE',
   PLAYER_TURN = 'PLAYER_TURN',
   AI_TURN = 'AI_TURN',
   GAME_OVER = 'GAME_OVER',
+}
+
+export enum Language {
+  ZH = 'ZH',
+  EN = 'EN',
+  ES = 'ES',
 }
