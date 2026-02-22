@@ -11,20 +11,36 @@ interface CardProps {
   highlighted?: boolean;
 }
 
+const ZODIAC_ANIMALS = ['🐭', '🐮', '🐯', '🐰', '🐲', '🐍', '🐴', '🐑', '🐵', '🐔', '🐶', '🐷'];
+
 const Card: React.FC<CardProps> = ({ card, hidden, onClick, disabled, highlighted }) => {
+  // Get a stable zodiac animal based on card ID
+  const zodiacIndex = Math.abs(card.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % ZODIAC_ANIMALS.length;
+  const zodiac = ZODIAC_ANIMALS[zodiacIndex];
+
   if (hidden) {
     return (
       <div 
-        className="w-14 h-20 md:w-24 md:h-36 bg-gradient-to-br from-indigo-900 to-blue-950 rounded-lg border-2 border-white/20 shadow-2xl flex items-center justify-center transform transition-transform hover:-translate-y-2 cursor-default relative overflow-hidden"
+        className="w-14 h-20 md:w-24 md:h-36 bg-gradient-to-br from-red-800 to-red-950 rounded-lg border-2 border-yellow-500/40 shadow-2xl flex items-center justify-center transform transition-transform hover:-translate-y-2 cursor-default relative overflow-hidden"
       >
-        <div className="absolute inset-0 opacity-20 flex flex-wrap gap-1 p-1">
-          {Array.from({ length: 24 }).map((_, i) => (
-            <div key={i} className="text-[8px] md:text-xs text-blue-200">♣♠♥♦</div>
+        {/* Traditional Pattern Background */}
+        <div className="absolute inset-0 opacity-10 flex flex-wrap gap-2 p-1">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div key={i} className="text-[10px] md:text-xs text-yellow-200 rotate-45">卍</div>
           ))}
         </div>
-        <div className="w-8 h-8 md:w-16 md:h-16 border-2 border-blue-400/30 rounded-full flex items-center justify-center bg-blue-900/50 backdrop-blur-sm">
-            <span className="text-blue-200 text-lg md:text-2xl font-bold">8</span>
+        
+        {/* Central Zodiac Animal */}
+        <div className="relative z-10 flex flex-col items-center gap-1 md:gap-2">
+          <div className="w-10 h-10 md:w-16 md:h-16 border-2 border-yellow-500/30 rounded-full flex items-center justify-center bg-red-900/50 backdrop-blur-sm shadow-inner">
+            <span className="text-2xl md:text-4xl drop-shadow-lg">{zodiac}</span>
+          </div>
+          <span className="text-[8px] md:text-[10px] font-black text-yellow-500/60 uppercase tracking-widest">LUCKY 8</span>
         </div>
+
+        {/* Corner Accents */}
+        <div className="absolute top-1 left-1 text-[8px] text-yellow-500/40">福</div>
+        <div className="absolute bottom-1 right-1 text-[8px] text-yellow-500/40">福</div>
       </div>
     );
   }

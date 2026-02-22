@@ -6,6 +6,7 @@ import { CardType, Suit, GameState, Rank, Language } from './types';
 import { createDeck, isValidMove, getAIBestMove, shuffleDeck } from './services/gameLogic';
 import Card from './components/Card';
 import SuitSelector from './components/SuitSelector';
+import MacawAnimation from './components/MacawAnimation';
 import { SUIT_ICONS, TRANSLATIONS } from './constants';
 
 const WINNING_QUOTES = [
@@ -32,9 +33,25 @@ const App: React.FC = () => {
   const [winningQuote, setWinningQuote] = useState<string>("");
   const [isSuitSelectorOpen, setIsSuitSelectorOpen] = useState(false);
   const [pendingEightCard, setPendingEightCard] = useState<CardType | null>(null);
+  const [hasDrawnThisTurn, setHasDrawnThisTurn] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+  const aiProcessingRef = React.useRef(false);
+  
+  // Refs for AI to access latest state without re-triggering effect
+  const aiHandRef = React.useRef(aiHand);
+  const discardPileRef = React.useRef(discardPile);
+  const currentSuitRef = React.useRef(currentSuit);
+
+  useEffect(() => { aiHandRef.current = aiHand; }, [aiHand]);
+  useEffect(() => { discardPileRef.current = discardPile; }, [discardPile]);
+  useEffect(() => { currentSuitRef.current = currentSuit; }, [currentSuit]);
 
   const t = TRANSLATIONS[language];
+
+  // Reset draw limit when turn changes
+  useEffect(() => {
+    setHasDrawnThisTurn(false);
+  }, [gameState]);
 
   const playWinSound = () => {
     try {
@@ -136,6 +153,11 @@ const App: React.FC = () => {
   };
 
   const handleDrawCard = (actor: 'player' | 'ai') => {
+    if (actor === 'player' && hasDrawnThisTurn) {
+      addLog(t.alreadyDrawn);
+      return;
+    }
+
     let currentDeck = [...deck];
     let currentDiscard = [...discardPile];
 
@@ -160,6 +182,7 @@ const App: React.FC = () => {
     const drawn = currentDeck.shift();
     if (drawn) {
       if (actor === 'player') {
+        setHasDrawnThisTurn(true);
         setPlayerHand(prev => [...prev, drawn]);
         setDeck(currentDeck);
         addLog(t.playerDrew);
@@ -175,21 +198,46 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (gameState === GameState.AI_TURN && !winner) {
+    if (gameState === GameState.AI_TURN && !winner && !aiProcessingRef.current) {
+      aiProcessingRef.current = true;
+      
       const timer = setTimeout(() => {
-        const { card, chosenSuit } = getAIBestMove(aiHand, discardPile[0], currentSuit);
+        // Double check state inside timeout
+        if (gameState !== GameState.AI_TURN || winner) {
+          aiProcessingRef.current = false;
+          return;
+        }
+
+        const top = discardPileRef.current[0];
+        if (!top) {
+          aiProcessingRef.current = false;
+          setGameState(GameState.PLAYER_TURN);
+          return;
+        }
+
+        const { card, chosenSuit } = getAIBestMove(aiHandRef.current, top, currentSuitRef.current);
+        
         if (card) {
           executeMove(card, 'ai', chosenSuit);
+          aiProcessingRef.current = false;
         } else {
           handleDrawCard('ai');
+          // After drawing, AI turn ends
           setTimeout(() => {
             setGameState(GameState.PLAYER_TURN);
+            aiProcessingRef.current = false;
           }, 800);
         }
       }, 1500);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        // We don't reset aiProcessingRef here because the timeout might still be running
+        // or we might be transitioning out of AI_TURN
+      };
+    } else if (gameState !== GameState.AI_TURN) {
+      aiProcessingRef.current = false;
     }
-  }, [gameState, aiHand, discardPile, currentSuit, winner]);
+  }, [gameState, winner]); // Only trigger on game state or winner changes
 
   const topCard = discardPile[0];
 
@@ -316,6 +364,8 @@ const App: React.FC = () => {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -100, opacity: 0 }}
                     transition={{ delay: i * 0.05 }}
+                    onClick={() => gameState === GameState.PLAYER_TURN && handleDrawCard('player')}
+                    className={gameState === GameState.PLAYER_TURN && !hasDrawnThisTurn ? 'cursor-pointer' : ''}
                   >
                     <Card card={c} hidden />
                   </motion.div>
@@ -332,24 +382,39 @@ const App: React.FC = () => {
           {/* Board Center */}
           <div className="flex flex-col items-center justify-center gap-8 md:gap-12 relative py-4">
             <div className="flex items-center gap-8 md:gap-32 relative">
-              {/* Draw Pile */}
-              <button 
-                onClick={() => gameState === GameState.PLAYER_TURN && handleDrawCard('player')}
-                disabled={gameState !== GameState.PLAYER_TURN}
-                className={`relative group ${gameState === GameState.PLAYER_TURN ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-              >
-                <div className="w-14 h-20 md:w-24 md:h-36 bg-gradient-to-br from-blue-900 to-indigo-950 rounded-lg border-2 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden">
-                  <div className="absolute inset-0 opacity-10 flex flex-wrap gap-1 p-1">
-                    {Array.from({ length: 12 }).map((_, i) => (
-                      <div key={i} className="text-[8px] text-white">♠♣♥♦</div>
-                    ))}
-                  </div>
-                  <span className="text-white/20 text-4xl font-black">?</span>
-                </div>
+              {/* Draw Pile Stack */}
+              <div className="relative group w-14 h-20 md:w-24 md:h-36">
+                {Array.from({ length: Math.min(3, deck.length || 1) }).map((_, i) => (
+                  <button 
+                    key={i}
+                    onClick={() => gameState === GameState.PLAYER_TURN && handleDrawCard('player')}
+                    disabled={gameState !== GameState.PLAYER_TURN || hasDrawnThisTurn}
+                    style={{ 
+                      transform: `translate(${i * 2}px, ${i * 2}px)`,
+                      zIndex: 10 - i 
+                    }}
+                    className={`absolute inset-0 w-full h-full bg-gradient-to-br from-red-800 to-red-950 rounded-lg border-2 border-yellow-500/40 shadow-xl flex items-center justify-center transition-all
+                      ${gameState === GameState.PLAYER_TURN && !hasDrawnThisTurn ? 'hover:-translate-y-2 cursor-pointer' : 'cursor-not-allowed opacity-80'}
+                    `}
+                  >
+                    {i === 0 && (
+                      <div className="relative z-10 flex flex-col items-center">
+                         <span className="text-white/20 text-4xl font-black">?</span>
+                      </div>
+                    )}
+                    {/* Traditional Pattern Background */}
+                    <div className="absolute inset-0 opacity-5 flex flex-wrap gap-2 p-1">
+                      {Array.from({ length: 12 }).map((_, j) => (
+                        <div key={j} className="text-[8px] text-yellow-200 rotate-45">卍</div>
+                      ))}
+                    </div>
+                  </button>
+                ))}
+                
                 <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30 whitespace-nowrap">
                   {t.draw}
                 </div>
-              </button>
+              </div>
 
               {/* Discard Pile */}
               <div className="relative">
@@ -462,15 +527,15 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="text-8xl mb-8 drop-shadow-2xl">
-                {winner === 'player' ? '🏆' : '💀'}
+            <div className="flex justify-center mb-8">
+              <MacawAnimation type={winner === 'player' ? 'win' : 'lose'} />
             </div>
             <h2 className="text-5xl font-black mb-6 tracking-tighter text-white">
                 {winner === 'player' ? t.win : t.lose}
             </h2>
             <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl mb-10 border border-white/10 min-h-[100px] flex items-center justify-center">
               <p className="text-yellow-100/80 italic leading-relaxed font-medium text-lg">
-                  {winner === 'player' ? `“${winningQuote}”` : (language === Language.ZH ? "胜败乃兵家常事，少侠请重新来过。" : (language === Language.EN ? "Defeat is part of the journey. Try again!" : "¡La derrota es parte del viaje!"))}
+                  {winner === 'player' ? `“${winningQuote}”` : (language === Language.ZH ? "再接再厉，少侠请重新来过。" : (language === Language.EN ? "Keep it up! Try again!" : "¡Sigue así! ¡Inténtalo de nuevo!"))}
               </p>
             </div>
             

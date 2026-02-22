@@ -37,7 +37,7 @@ export const TRANSLATIONS = {
     pass: "跳过",
     selectSuit: "选择下一个花色",
     win: "你赢了！",
-    lose: "你输了！",
+    lose: "再接再厉！",
     welcome: "欢迎来到疯狂8点！",
     invalidMove: "无效的出牌！请选择相同花色或点数的牌。",
     shuffling: "洗牌中...",
@@ -51,6 +51,7 @@ export const TRANSLATIONS = {
     clubs: "梅花",
     spades: "黑桃",
     back: "返回",
+    alreadyDrawn: "每回合只能摸一张牌！",
   },
   EN: {
     title: "Yuan's Playground Crazy Eight",
@@ -65,7 +66,7 @@ export const TRANSLATIONS = {
     pass: "Pass",
     selectSuit: "Select Next Suit",
     win: "You Win!",
-    lose: "AI Wins!",
+    lose: "Keep it up!",
     welcome: "Welcome to Crazy 8!",
     invalidMove: "Invalid move! Match suit or rank.",
     shuffling: "Shuffling...",
@@ -79,6 +80,7 @@ export const TRANSLATIONS = {
     clubs: "Clubs",
     spades: "Spades",
     back: "Back",
+    alreadyDrawn: "Only one draw per turn!",
   },
   ES: {
     title: "El Patio de Yuan: Ocho Loco",
@@ -93,7 +95,7 @@ export const TRANSLATIONS = {
     pass: "Pasar",
     selectSuit: "Selecciona Palo",
     win: "¡Ganaste!",
-    lose: "¡IA Gana!",
+    lose: "¡Sigue así!",
     welcome: "¡Bienvenido a Ocho Loco!",
     invalidMove: "¡Movimiento inválido!",
     shuffling: "Barajando...",
@@ -107,5 +109,6 @@ export const TRANSLATIONS = {
     clubs: "Tréboles",
     spades: "Picas",
     back: "Volver",
+    alreadyDrawn: "¡Solo un robo por turno!",
   }
 };
